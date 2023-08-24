@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import {PostService} from "@/composables/Post";
+import {PostService, type IPost} from "@/core/app/services/Post";
 import { useQuery } from "@tanstack/vue-query";
-import type {IPost} from "@/composables/Post/model";
 
 const {data: posts, isSuccess} = useQuery({
   queryKey: ['getPosts'],

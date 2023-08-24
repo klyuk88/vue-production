@@ -1,5 +1,5 @@
 import axios, {type AxiosError, type AxiosInstance, type AxiosResponse} from "axios";
-import type {IDataProvider} from "@/core/dataProvider/";
+import type {IDataProvider} from "@/core/domain/dataProvider";
 
 export type TAxiosProviderGet<D = any> = ReturnType<IDataProvider<AxiosResponse<D>, AxiosError>['get']>;
 export class AxiosProvider implements IDataProvider<AxiosResponse, AxiosError> {

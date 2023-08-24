@@ -1,0 +1,1 @@
+export {PostApi, type TPostApi} from './post'
