@@ -1,0 +1,1 @@
+export type {IResponse, IDataProvider} from "./model"
