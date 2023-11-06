@@ -2,15 +2,13 @@
 import { computed, ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
 import type { TIUiSelectOption, IUiSelectProps } from "./types";
-const props = withDefaults(defineProps<IUiSelectProps>(), {
-  multiple: false
-});
+const props = defineProps<IUiSelectProps>();
 const emits = defineEmits<{
   change: [option: TIUiSelectOption | TIUiSelectOption[]];
 }>();
 const showList = ref(false);
 const uiSelectNode = ref<HTMLElement | null>(null);
-const optionsList = ref<TIUiSelectOption | TIUiSelectOption[]>([]);
+const optionsList = ref<TIUiSelectOption | TIUiSelectOption[]>(props.defaultOption);
 onClickOutside(uiSelectNode, () => {
   showList.value = false;
   searchInput.value = null;
