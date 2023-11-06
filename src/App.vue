@@ -5,14 +5,10 @@ import TheHeader from "@/components/widgets/TheHeader.vue";
 
 <template>
   <main>
-    <TheAside/>
-    <div class="w-full fixed h-full top-0 left-0 bg-black bg-opacity-50 z-10"></div>
-    <div id="page" class="ml-[250px]">
-      <TheHeader/>
-      <RouterView />
+    <!--    <TheAside />-->
+    <div id="page" class="">
+      <TheHeader />
+      <router-view></router-view>
     </div>
   </main>
-
-
 </template>
-
