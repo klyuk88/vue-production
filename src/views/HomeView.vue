@@ -1,34 +1,45 @@
 <script setup lang="ts">
-import { ref } from "vue";
 import UiSelect from "@/components/Ui/UiSelect/UiSelect.vue";
 import type { TIUiSelectOption } from "@/components/Ui/UiSelect/types";
-const options = ref(["Hello", "world", "Good"]);
-const options2 = [
+
+const options2: TIUiSelectOption[] = [
   {
-    label: "Hello",
-    value: 1
+    label: "Ilya",
+    category: "Ru"
   },
   {
-    label: "world",
-    value: 2
+    label: "Nick",
+    category: "Ru"
+  },
+  {
+    label: "Bob",
+    category: "En"
+  },
+  {
+    label: "Anton",
+    category: "En"
   }
 ];
 
-const selectHandler = (item: TIUiSelectOption) => {
-  console.log(item);
+const selectHandler = (item: TIUiSelectOption | TIUiSelectOption[]) => {
+  if (Array.isArray(item)) {
+    console.log(item);
+  } else {
+    console.log(item.label);
+  }
 };
 </script>
 <template>
   <div id="home-page" class="px-10 pt-5 container mx-auto">
     <h1>Home page</h1>
     <div class="w-[400px]">
-      <UiSelect :options="options2" @change="selectHandler" :multiple="true" :searchable="false">
-        <template #selectedOption="{ option }">
-          <div class="bg-amber-500 px-1 rounded-xl">{{ option.label }}</div>
-        </template>
-        <template #option="{ option }">
-          <div class="bg-amber-500 px-1rounded-xl">{{ option.label }}</div>
-        </template>
+      <UiSelect
+        :options="options2"
+        @change="selectHandler"
+        :multiple="false"
+        :searchable="false"
+        :grouping="true"
+      >
       </UiSelect>
     </div>
   </div>

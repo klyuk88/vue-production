@@ -1,13 +1,13 @@
-export type TIUiSelectOption =
-  | {
-      label: string;
-      value: unknown;
-    }
-  | string;
+export type TIUiSelectOption = {
+  label: string;
+  category?: string | number;
+  [key: string]: string | number | undefined;
+};
 
-export interface IUiSelectProps {
-  options: TIUiSelectOption[];
-  defaultOption: TIUiSelectOption | TIUiSelectOption[];
+export type TUiSelectProps = {
+  options: Array<TIUiSelectOption>;
   multiple?: boolean;
   searchable?: boolean;
-}
+  grouping?: boolean;
+  defaultOption?: TIUiSelectOption | TIUiSelectOption[];
+};

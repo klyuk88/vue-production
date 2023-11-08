@@ -1,70 +1,45 @@
 <script setup lang="ts">
-import { computed, ref } from "vue";
+import { ref } from "vue";
 import { onClickOutside } from "@vueuse/core";
-import type { TIUiSelectOption, IUiSelectProps } from "./types";
-const props = defineProps<IUiSelectProps>();
+import type { TIUiSelectOption, TUiSelectProps } from "./types";
+import { useUiSelect } from "./useUiSelect";
+
+const uiSelectNode = ref<HTMLElement | null>(null);
+onClickOutside(uiSelectNode, () => {
+  isShowOptionsList.value = false;
+  searchInput.value = null;
+});
+``;
+const props = defineProps<TUiSelectProps>();
 const emits = defineEmits<{
   change: [option: TIUiSelectOption | TIUiSelectOption[]];
 }>();
-const showList = ref(false);
-const uiSelectNode = ref<HTMLElement | null>(null);
-const optionsList = ref<TIUiSelectOption | TIUiSelectOption[]>(props.defaultOption);
-onClickOutside(uiSelectNode, () => {
-  showList.value = false;
-  searchInput.value = null;
-});
-
-const changeSelectHandler = (item: TIUiSelectOption) => {
-  if (!props.multiple) {
-    if (optionsList.value === item) {
-      showList.value = false;
-      return;
-    }
-    optionsList.value = item;
-    emits("change", optionsList.value);
-    showList.value = false;
-    searchInput.value = null;
-    return;
-  }
-  if (Array.isArray(optionsList.value) && optionsList.value?.includes(item)) {
-    showList.value = false;
-    return;
-  }
-  (optionsList.value as TIUiSelectOption[])?.push(item);
-  emits("change", optionsList.value);
-  showList.value = false;
-  searchInput.value = null;
-  return;
-};
-
-const isArrayOptions = computed(() => {
-  return Array.isArray(optionsList.value);
-});
-
-const deleteOptionHandler = (item: TIUiSelectOption) => {
-  optionsList.value = (optionsList.value as TIUiSelectOption[])?.filter(
-    (el: TIUiSelectOption) => el !== item
-  );
-  emits("change", optionsList.value);
-};
-
-const searchInput = ref<string | null>(null);
-const optionsSearch = computed(() => {
-  let reg = new RegExp(`${searchInput.value}`, "ig");
-  return props.options.filter((item: TIUiSelectOption) => {
-    return reg.test(typeof item !== "string" ? item?.label : item);
-  });
-});
+const {
+  isShowOptionsList,
+  deleteOptionHandler,
+  changeSelectHandler,
+  multipleSelectedValue,
+  singleSelectedValue,
+  searchInput,
+  isShowPlaceholder,
+  optionsSearchList,
+  groupOptionsList
+} = useUiSelect(props, emits);
 </script>
 <template>
   <div class="ui-select__wrap" ref="uiSelectNode">
-    <div @click="showList = !showList" class="ui-select" tabindex="0">
-      <span class="text-neutral-400" v-if="optionsList?.length === 0">Select value</span>
-      <template v-if="isArrayOptions">
-        <div v-for="(item, idx) in optionsList" :key="idx" class="flex items-center gap-1">
+    <div @click="isShowOptionsList = !isShowOptionsList" class="ui-select" tabindex="0">
+      <span class="text-neutral-400" v-if="isShowPlaceholder">Select value</span>
+      <!--      if multiple value -->
+      <template v-if="props.multiple">
+        <div
+          v-for="(item, idx) in multipleSelectedValue"
+          :key="idx"
+          class="flex items-center gap-1"
+        >
           <slot name="selectedOption" v-bind="{ option: item }">
             <div class="bg-neutral-200 p-0.5">
-              {{ item?.label ?? item }}
+              {{ item?.label }}
             </div>
           </slot>
           <img
@@ -75,14 +50,15 @@ const optionsSearch = computed(() => {
           />
         </div>
       </template>
-      <template v-else>
-        <slot name="selectedOption" v-bind="{ option: optionsList }">
-          {{ optionsList?.label ?? optionsList }}</slot
+      <!--      if single value -->
+      <template v-if="!props.multiple">
+        <slot name="selectedOption" v-bind="{ option: singleSelectedValue }">
+          {{ singleSelectedValue?.label }}</slot
         >
       </template>
     </div>
     <Transition>
-      <div class="ui-select__list" v-if="showList">
+      <div class="ui-select__list" v-if="isShowOptionsList && !props.grouping">
         <ul>
           <li
             class="ui-select__list__item flex items-center gap-2 relative"
@@ -94,13 +70,13 @@ const optionsSearch = computed(() => {
           <template v-if="searchInput">
             <li
               class="ui-select__list__item"
-              v-for="(item, idx) in optionsSearch"
+              v-for="(item, idx) in optionsSearchList"
               :key="idx"
               @click="changeSelectHandler(item)"
             >
-              <slot name="option" v-bind="{ option: item }">{{ item?.label ?? item }}</slot>
+              <slot name="option" v-bind="{ option: item }">{{ item?.label }}</slot>
             </li>
-            <li v-if="optionsSearch.length === 0" class="p-2">Not fount result</li>
+            <li v-if="optionsSearchList.length === 0" class="p-2">Not fount result</li>
           </template>
           <template v-else>
             <li
@@ -109,10 +85,15 @@ const optionsSearch = computed(() => {
               :key="idx"
               @click="changeSelectHandler(item)"
             >
-              <slot name="option" v-bind="{ option: item }">{{ item?.label ?? item }}</slot>
+              <slot name="option" v-bind="{ option: item }">{{ item?.label }}</slot>
             </li>
           </template>
         </ul>
+      </div>
+    </Transition>
+    <Transition>
+      <div class="ui-select__list" v-if="isShowOptionsList && props.grouping">
+        <pre>{{ groupOptionsList }}</pre>
       </div>
     </Transition>
   </div>
