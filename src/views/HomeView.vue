@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createFetch, type UseFetchOptions } from "@vueuse/core";
 import queryString from "query-string";
-import { computed, reactive, ref, type ComputedRef, type Ref } from "vue";
+import { computed, reactive, ref, type MaybeRef, unref } from "vue";
 
 type TPost = {
   userId: number;
@@ -23,22 +23,33 @@ const fetch = createFetch({
   }
 });
 const useMyFetch = <T,>(
-  url: string | Ref<string> | ComputedRef<string>,
-  queryParams?: Record<string, any>,
+  url: MaybeRef,
+  queryParams?: MaybeRef<Record<string, any>>,
   useFetchOptions: UseFetchOptions = {}
 ) => {
-  //ref url
-  const urlRef = computed<string>(() => {
-    return `${typeof url === "string" ? url : url.value}${
+  if (typeof url === "string") {
+    const urlStr = `${url}${
       queryParams
         ? "?" +
-          queryString.stringify(queryParams, {
+          queryString.stringify(unref(queryParams), {
+            arrayFormat: "comma"
+          })
+        : ""
+    }`;
+    return fetch<T>(urlStr, {
+      ...useFetchOptions
+    }).json<T>();
+  }
+  const urlRef = computed<string>(() => {
+    return `${unref(url)}${
+      queryParams
+        ? "?" +
+          queryString.stringify(unref(queryParams), {
             arrayFormat: "comma"
           })
         : ""
     }`;
   });
-
   return fetch<T>(urlRef, {
     ...useFetchOptions
   }).json<T>();
