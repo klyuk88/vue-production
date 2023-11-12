@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { createFetch, type UseFetchOptions } from "@vueuse/core";
 import queryString from "query-string";
-import { computed, reactive } from "vue";
+import { computed, reactive, ref, type ComputedRef, type Ref } from "vue";
 
 type TPost = {
   userId: number;
@@ -15,21 +15,21 @@ const configQuery = reactive({
   _page: 1
 });
 
+//create instance
+const fetch = createFetch({
+  baseUrl: "https://jsonplaceholder.typicode.com",
+  options: {
+    refetch: true
+  }
+});
 const useMyFetch = <T,>(
-  url: string,
+  url: string | Ref<string> | ComputedRef<string>,
   queryParams?: Record<string, any>,
   useFetchOptions: UseFetchOptions = {}
 ) => {
-  //create instance
-  const fetch = createFetch({
-    baseUrl: "https://jsonplaceholder.typicode.com",
-    options: {
-      refetch: true
-    }
-  });
   //ref url
   const urlRef = computed<string>(() => {
-    return `${url}${
+    return `${typeof url === "string" ? url : url.value}${
       queryParams
         ? "?" +
           queryString.stringify(queryParams, {
@@ -38,15 +38,18 @@ const useMyFetch = <T,>(
         : ""
     }`;
   });
-  // return instance
+
   return fetch<T>(urlRef, {
     ...useFetchOptions
-  });
+  }).json<T>();
 };
 
-const { data, error, isFetching } = useMyFetch<TPost[]>("/posts", configQuery, {
-  refetch: false
+const postId = ref(1);
+const url = computed(() => {
+  return `/posts/${postId.value}`;
 });
+
+const { data, error, isFetching } = await useMyFetch<TPost>(url, configQuery);
 
 const setPageHandler = () => {
   configQuery._page = configQuery._page + 1;
@@ -58,9 +61,14 @@ const addPost = () => {
     userId: 1
   });
 };
+
+const setPostId = () => {
+  postId.value = postId.value + 1;
+};
 </script>
 <template>
   <div id="home-page" class="px-10 pt-5 container mx-auto">
+    {{ postId }}
     <h1>Home page</h1>
     <div class="w-[400px]">
       <div v-if="error">Error</div>
@@ -71,6 +79,7 @@ const addPost = () => {
 
       <button @click="setPageHandler">Set page</button>
       <button @click="addPost">Add Post</button>
+      <button @click="setPostId">Set Post ID</button>
     </div>
   </div>
 </template>
